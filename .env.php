@@ -1,0 +1,1 @@
+# define('TELEGRAM_TOKEN', '');
