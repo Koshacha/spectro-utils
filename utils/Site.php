@@ -1,7 +1,6 @@
 <?php
-namespace Utils;
 
-class App {
+class Site {
     private static $config = [];
     private static $labels = [];
 
