@@ -2,11 +2,14 @@
 
 class Template {
     private static $templates = [];
+    private static $template = "";
 
     public static function useTemplates($filename) {
         $templates = [];
         $fileContent = file_get_contents(IMGPATH . "html/{$filename}.html");
       
+        self::$template = $fileContent;
+        
         $pattern = '/<!--\s*\$template\s*([\'"])(.*?)\1\s*-->\s*(.*?)(?=<!--\s*\$template\s*|\z)/s';
       
         preg_match_all($pattern, $fileContent, $matches, PREG_SET_ORDER);
@@ -23,21 +26,25 @@ class Template {
     }
 
     public static function assert($fields, $template = null) {
-        if (isset($fields['$template'])) {
-            $template = $fields['$template'];
+        if ($template === null && !array_key_exists('$template', $fields)) {
+            $html = self::$template;
         } else {
-            $fields['$template'] = $template;
+            if (isset($fields['$template'])) {
+                $template = $fields['$template'];
+            } else {
+                $fields['$template'] = $template;
+            }
+    
+            if (!$template) {
+                throw new \Exception("Template not specified");
+            }
+    
+            if (!array_key_exists($template, self::$templates)) {
+                throw new \Exception("Template $template not found");
+            }
+    
+            $html = self::$templates[$template];
         }
-
-        if (!$template) {
-            throw new \Exception("Template not specified");
-        }
-
-        if (!array_key_exists($template, self::$templates)) {
-            throw new \Exception("Template $template not found");
-        }
-
-        $html = self::$templates[$template];
 
         foreach ($fields as $k => $v) {
             if (is_array($v)) {
