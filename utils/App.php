@@ -2,7 +2,14 @@
 namespace Utils;
 
 class App {
+    private static $config = [];
+    private static $labels = [];
+
     public static function getSiteConfig() {
+        if (isset(self::$config)) {
+            return self::$config;
+        }
+
         $options = [];
         $labels = [];
 
@@ -12,6 +19,22 @@ class App {
             $labels[$row['S01']] = $row['NAME'];
         }
 
-        return [$options, $labels];
+        self::$config = $options;
+        self::$labels = $labels;
+
+        return $options;
+    }
+
+    public static function getSiteEmail() {
+        if (isset(self::$config['sitemail'])) {
+            return self::$config['sitemail'];
+        }
+
+        if ($dbres = db_query("select * from ".PREFIX."ROWS where TYPE='site' and S01='sitemail'"))
+        if ($row = mysql_fetch_array($dbres)) {
+            return $row['S02'];
+        }
+    
+        return "contact@siteconst.ru";
     }
 }
