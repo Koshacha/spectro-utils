@@ -1,5 +1,4 @@
 <?php
-namespace Utils;
 
 class Tinkoff {
     private static function request($path, $body) {
@@ -49,7 +48,7 @@ class Tinkoff {
           )
         );
       
-        $response = Tinkoff::request('Init', $body);
+        $response = self::request('Init', $body);
       
         return json_decode($response, true);
     }
@@ -60,7 +59,7 @@ class Tinkoff {
           "PaymentId" => $paymentId,
           "Token" => hash('sha256', TINKOFF_PASSWORD . $paymentId . TINKOFF_TERMINAL_KEY)
         );
-        $response = Tinkoff::request('GetState', $body);
+        $response = self::request('GetState', $body);
       
         return json_decode($response, true);
     }

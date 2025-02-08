@@ -1,7 +1,5 @@
 <?php
 
-namespace Utils;
-
 class Email {
     private static $to;
     private static $from;

@@ -1,5 +1,4 @@
 <?php
-namespace Utils;
 
 class Image {
     public static function function compress($source, $destination, $quality) {

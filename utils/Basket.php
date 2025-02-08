@@ -1,5 +1,4 @@
 <?php
-namespace Utils;
 
 class Basket {
     public static function getBasket() {

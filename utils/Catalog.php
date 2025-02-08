@@ -2,8 +2,6 @@
 
 require_once(__DIR__ . "/strings/Catalog.php");
 
-namespace Utils;
-
 class Catalog {
   private $db = NULL;
   private $t = [];

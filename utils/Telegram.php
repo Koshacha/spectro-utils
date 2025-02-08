@@ -1,5 +1,4 @@
 <?php
-namespace Utils;
 
 class Telegram {
     public static function sendToBot($message, $chat) {

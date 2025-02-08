@@ -1,7 +1,5 @@
 <?php
 
-namespace Utils;
-
 class Sms {
     static $provider;
 
