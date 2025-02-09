@@ -88,6 +88,8 @@ class Route {
     
             if (self::$template) {
                 self::renderTemplate(self::$template, self::$data);
+            } else {
+                self::renderTemplate($GLOBALS['data'], self::$data);
             }
         }
     }
