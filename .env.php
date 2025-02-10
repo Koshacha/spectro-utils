@@ -1,5 +1,7 @@
 # define('TELEGRAM_TOKEN', '');
 
+# Push-уведомления
+# define('PUSH_CREDENTIALS_FILE', '');
 
 # Tinkoff
 # define('TINKOFF_TERMINAL_KEY', '');
