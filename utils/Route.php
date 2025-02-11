@@ -38,6 +38,9 @@ class Route {
     
             $parameters = $reflection->getParameters();
             $args = [];
+
+            $req = Request::get();
+            $files = Request::files();
     
             foreach ($parameters as $parameter) {
                 $name = $parameter->getName();
@@ -52,6 +55,14 @@ class Route {
                   }
                 }
 
+                if ($name === 'request') {
+                    $value = $req;
+                } elseif ($name === 'files') {
+                    $value = $files;
+                } elseif (array_key_exists($name, $req)) {
+                    $value = $req[$name];
+                }
+                
                 if ($value === null && array_key_exists($name, $GLOBALS)) {
                   $value = $GLOBALS[$name];
                 }
