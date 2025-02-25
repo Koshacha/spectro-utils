@@ -25,7 +25,7 @@ class Action {
         return;
     }
 
-    public static function emit() {
+    public static function exec() {
         $action = $GLOBALS['action'];
         if (isset(self::$actions[$action])) {
             $callback = self::$actions[$action];
