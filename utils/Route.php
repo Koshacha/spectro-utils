@@ -89,9 +89,16 @@ class Route {
         ];
     }
 
-    public static function useTemplate($template) {
+    public static function useLocalTemplate($template) {
+        $template = str_replace('.html', '', $template);
         self::$template = $template;
-        Template::useTemplates($template);
+        Template::useTemplates(IMGPATH . "html/{$template}.html");
+    }
+
+    public static function useTemplate($template) {
+        $template = str_replace('.html', '', $template);
+        self::$template = $template;
+        Template::useTemplates(__DIR__ . "/html/{$template}.html");
     }
 
     private static function pathToRegex($path) {

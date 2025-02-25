@@ -6,7 +6,7 @@ class Template {
 
     public static function useTemplates($filename) {
         $templates = [];
-        $fileContent = file_get_contents(IMGPATH . "html/{$filename}.html");
+        $fileContent = file_get_contents($filename);
       
         self::$template = $fileContent;
         
