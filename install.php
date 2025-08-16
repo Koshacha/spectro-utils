@@ -55,13 +55,19 @@ try {
     $zip->extractTo($tempExtractDir);
     $zip->close();
 
-    // Перемещение файлов
+    // Перемещение папки utils
     $extractedSubDir = glob($tempExtractDir . '/*')[0] ?? null;
     if (!$extractedSubDir || !is_dir($extractedSubDir)) {
         throw new Exception("Не удалось найти контент в распакованном архиве.");
     }
-    echo "Перемещение файлов в директорию установки...\n";
-    recurse_copy($extractedSubDir, $installDir);
+
+    $sourceUtilsDir = $extractedSubDir . '/utils';
+    if (!is_dir($sourceUtilsDir)) {
+        throw new Exception("Папка 'utils' не найдена в архиве релиза.");
+    }
+
+    echo "Копирование папки 'utils'...\n";
+    recurse_copy($sourceUtilsDir, $installDir . '/utils');
 
     echo "Установка успешно завершена!\n";
 
@@ -91,9 +97,6 @@ function recurse_copy($src, $dst) {
             if (is_dir($srcPath)) {
                 recurse_copy($srcPath, $dstPath);
             } else {
-                if (basename($dstPath) === 'install.php') {
-                    continue;
-                }
                 copy($srcPath, $dstPath);
             }
         }
