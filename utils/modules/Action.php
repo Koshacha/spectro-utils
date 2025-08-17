@@ -113,7 +113,7 @@ class Action {
                 }
             } catch (SpectroError $e) {
                 self::$data = [
-                    '$result' => $e->getCode();
+                    '$result' => $e->getCode(),
                 ];
                 $exc = $e->getDecodedMessage();
                 $key = is_array($exc) ? '$json' : '$text';

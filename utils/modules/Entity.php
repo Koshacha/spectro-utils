@@ -74,7 +74,7 @@ class BaseEntity
                 throw new InvalidArgumentException('Invalid condition format.');
             }
             list($field, $op, $value) = $condition;
-            $paramName = ":param_{\$paramIndex}";
+            $paramName = ":param_{$paramIndex}";
             $params[$paramName] = $value;
             $paramIndex++;
 
@@ -85,29 +85,29 @@ class BaseEntity
                 case 'json':
                     $col = $mapping['column'];
                     $fld = $mapping['field'];
-                    $fieldSql = "JSON_UNQUOTE(JSON_EXTRACT(`{\$col}`, '$.{\$fld}'))";
+                    $fieldSql = "JSON_UNQUOTE(JSON_EXTRACT(`{$col}`, '$.{$fld}'))";
                     break;
                 case 'grouped':
                     $col = $mapping['column'];
                     $idx = $mapping['index'] + 1;
                     $sep = self::GROUP_SEPARATOR;
-                    $fieldSql = "SUBSTRING_INDEX(SUBSTRING_INDEX(`{\$col}`, '{\$sep}', {\$idx}), '{\$sep}', -1)";
+                    $fieldSql = "SUBSTRING_INDEX(SUBSTRING_INDEX(`{$col}`, '{$sep}', {$idx}), '{$sep}', -1)";
                     break;
                 case 'direct':
                 default:
                     $col = preg_replace('/[^a-zA-Z0-9_]/', '', $mapping['column']);
-                    $fieldSql = "`{\$col}`";
+                    $fieldSql = "`{$col}`";
                     break;
             }
             
-            $sqlParts[] = "{\$fieldSql} {\$op} {\$paramName}";
+            $sqlParts[] = "{$fieldSql} {$op} {$paramName}";
         }
 
         if (empty($sqlParts)) {
             return ['1', []];
         }
 
-        $where = implode(" {\$operator} ", $sqlParts);
+        $where = implode(" {$operator} ", $sqlParts);
         return [$where, $params];
     }
 
@@ -243,7 +243,7 @@ class BaseEntity
             $finalWhere .= " AND ({$userWhere})";
         }
 
-        $row = Db::one("SELECT * FROM `{\$table}` WHERE {\$finalWhere} LIMIT 1", $params);
+        $row = Db::one("SELECT * FROM `{$table}` WHERE {$finalWhere} LIMIT 1", $params);
         return static::hydrate($row);
     }
 
@@ -263,7 +263,7 @@ class BaseEntity
             $params = array_merge($params, $userParams);
         }
 
-        $rows = Db::all("SELECT * FROM `{\$table}` WHERE {\$finalWhere}", $params);
+        $rows = Db::all("SELECT * FROM `{$table}` WHERE {$finalWhere}", $params);
         
         return array_map([static::class, 'hydrate'], $rows);
     }
@@ -279,7 +279,7 @@ class BaseEntity
         $params = ['id' => $id, '_entity_type' => static::$entityName];
 
         if ($storage_mode === 'json') {
-            $existing = Db::one("SELECT VALUE FROM `{\$table}` WHERE {\$where}", $params);
+            $existing = Db::one("SELECT VALUE FROM `{$table}` WHERE {$where}", $params);
             $existingData = $existing ? json_decode($existing['VALUE'], true) : [];
             $newData = array_merge($existingData, $data);
             $dehydratedData['VALUE'] = json_encode($newData, JSON_UNESCAPED_UNICODE);
@@ -306,7 +306,7 @@ class BaseEntity
             $dehydratedData = $directDbColumns;
 
             if (!empty($groupedDbColumns)) {
-                $existing = Db::one("SELECT " . implode(',', $groupedDbColumns) . " FROM `{\$table}` WHERE {\$where}", $params);
+                $existing = Db::one("SELECT " . implode(',', $groupedDbColumns) . " FROM `{$table}` WHERE {$where}", $params);
                 if ($existing) {
                     foreach($groupedDbColumns as $col) {
                         $old_values = explode(self::GROUP_SEPARATOR, $existing[$col] ?? '');
@@ -442,7 +442,7 @@ class Entity
             ];
         }
 
-        $classCode = "class {\$className} extends BaseEntity { protected static \$entityName = '{\$entityName}'; }" ;
+        $classCode = "class {$className} extends BaseEntity { protected static \$entityName = '{$entityName}'; }" ;
         eval($classCode);
     }
 

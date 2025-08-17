@@ -1,7 +1,7 @@
 <?php
 
 class Image {
-    public static function function compress($source, $destination, $quality) {
+    public static function compress($source, $destination, $quality) {
         $info = getimagesize($source);
       
         if ($info['mime'] == 'image/jpeg') 
