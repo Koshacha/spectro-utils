@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/Request.php';
+require_once KYUTILS_PATH . '/modules/Request.php';
 
 class Inject {
     private $reflection;

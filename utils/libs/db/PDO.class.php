@@ -18,7 +18,7 @@ require(__DIR__ . '/PDO.Iterator.class.php');
  * @property PDOStatement sQuery PDOStatement
  * @property PDOLog PDOLog logObject
  */
-class DB
+class PDO_DB
 {
 	private $Host;
 	private $DBPort;

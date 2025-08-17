@@ -1,7 +1,7 @@
 <?php
 
-require_once __DIR__ . '/Request.php';
-require_once __DIR__ . '/exceptions/SpectroError.php';
+require_once KYUTILS_PATH . '/modules/Request.php';
+require_once KYUTILS_PATH . '/exceptions/SpectroError.php';
 
 class Action {
     private static $actions = [];

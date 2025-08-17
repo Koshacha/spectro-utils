@@ -1,6 +1,7 @@
 <?php
 
-require_once(__DIR__ . "/strings/Catalog.php");
+require_once KYUTILS_PATH . "/strings/Catalog.php";
+// require_once KYUTILS_PATH . "/modules/Db.php";
 
 class Catalog {
   private $db = NULL;
@@ -12,7 +13,7 @@ class Catalog {
 
 
   function __construct($db1host, $db1base, $db1user, $db1pass) {
-    $this->db = new Db($db1host, 3306, $db1base, $db1user, $db1pass);
+    $this->db = new PDO_DB($db1host, 3306, $db1base, $db1user, $db1pass);
   }
 
   public function set_logger($flag, $new_line_symbol = "\r\n") {

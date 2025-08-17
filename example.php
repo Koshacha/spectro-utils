@@ -1,14 +1,14 @@
 <?php
 
-function includeUtilites() {
-    if (file_exists(IMGPATH . 'utils/class.php')) {
-        require_once IMGPATH . 'utils/class.php';
+function includeUtilities() {
+    if (file_exists(__DIR__ . '/utils/class.php')) {
+        require_once __DIR__ . '/utils/class.php';
     }
-
-    return;
 }
 
-Utilities::enable(['route']);
+includeUtilities();
+
+Modules::enable();
 
 Route::lazyPage('/about/:cat/:id', function($id, $cat, $options) {
     Route::useTemplate('deliveries');
@@ -28,7 +28,7 @@ Route::lazyPage('/about/:cat/:id', function($id, $cat, $options) {
 
 Entity::register('metal', [
     'NAME' => 'name',
-    'S01' => ['sex', 'birthday', 'phone']
+    'S01' => ['sex', 'birthday', 'phone'],
     'S02' => ['phrase', 'registerDate'],
     [
         'age' => function () {

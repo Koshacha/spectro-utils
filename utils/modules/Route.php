@@ -1,8 +1,7 @@
 <?php
 
-require_once __DIR__ . '/Template.php';
-require_once __DIR__ . '/Router.php';
-require_once __DIR__ . '/Inject.php';
+require_once KYUTILS_PATH . '/modules/Template.php';
+require_once KYUTILS_PATH . '/modules/Inject.php';
 
 class Route {
     private static $routes = [];
