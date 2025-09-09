@@ -35,7 +35,7 @@ class DB {
 
     public static function all($sql, $params = []) {
         self::autorun();
-        return self::$pdo->all($sql, $params);
+        return self::$pdo->query($sql, $params);
     }
 
     public static function insert($table, $data) {

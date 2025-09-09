@@ -22,12 +22,10 @@ class Inject {
                     return $callback;
                 });
             }
-        } elseif(is_array($callback)) {
-            if (count($callback) === 2 && is_object($callback[0])) {
-                $reflection = new ReflectionMethod($callback[0], $callback[1]);
-            } elseif ($callback instanceof Closure) {
-                $reflection = new ReflectionFunction($callback);
-            }
+        } elseif (count($callback) === 2 && is_object($callback[0])) {
+            $reflection = new ReflectionMethod($callback[0], $callback[1]);
+        } elseif ($callback instanceof Closure) {
+            $reflection = new ReflectionFunction($callback);
         }
 
         if ($reflection === null) {

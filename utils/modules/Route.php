@@ -8,8 +8,9 @@ class Route {
     private static $template;
     public static $data = [];
 
-    private static function exec() {
+    public static function exec() {
         $uri = $_SERVER['REQUEST_URI'];
+        $uri = explode('?', $uri)[0];
         $uri = str_replace('frame/', '', $uri);
 
         foreach (self::$routes as $path => $route) {

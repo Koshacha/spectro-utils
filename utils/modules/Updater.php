@@ -72,7 +72,7 @@ class Updater {
         $zip->close();
         unlink($tempZipFile);
 
-        $extractedSubDir = glob($tempExtractDir . '/*')[0] ?? null;
+        $extractedSubDir = isset(glob($tempExtractDir . '/*')[0]) ? glob($tempExtractDir . '/*')[0] : null;
         if (!$extractedSubDir || !is_dir($extractedSubDir)) {
             $this->rrmdir($tempExtractDir);
             return ['success' => false, 'message' => 'Failed to find content in extracted archive.'];

@@ -6,7 +6,7 @@ require_once KYUTILS_PATH . '/exceptions/SpectroError.php';
 class BaseEntity
 {
     protected static $entityName;
-    private const GROUP_SEPARATOR = ':-:';
+    private static $GROUP_SEPARATOR = ':-:';
     private static $tableColumnCache = [];
 
     private static function getTableColumns($tableName)
@@ -28,10 +28,10 @@ class BaseEntity
 
     private static function findFieldMapping($fieldName) {
         $definition = static::getDefinition();
-        $storage_mode = $definition['storage_mode'] ?? 'grouped_string';
+        $storage_mode = isset($definition['storage_mode']) ? $definition['storage_mode'] : 'grouped_string';
 
         if ($storage_mode === 'json') {
-            if (in_array($fieldName, $definition['fields']['VALUE'] ?? [])) {
+            if (in_array($fieldName, isset($definition['fields']['VALUE']) ? $definition['fields']['VALUE'] : [])) {
                 return ['type' => 'json', 'column' => 'VALUE', 'field' => $fieldName];
             }
         } else { // grouped_string
@@ -75,7 +75,8 @@ class BaseEntity
             }
             list($field, $op, $value) = $condition;
             $paramName = ":param_{$paramIndex}";
-            $params[$paramName] = $value;
+            $paramKey = "param_{$paramIndex}";
+            $params[$paramKey] = $value;
             $paramIndex++;
 
             $mapping = static::findFieldMapping($field);
@@ -90,7 +91,7 @@ class BaseEntity
                 case 'grouped':
                     $col = $mapping['column'];
                     $idx = $mapping['index'] + 1;
-                    $sep = self::GROUP_SEPARATOR;
+                    $sep = self::$GROUP_SEPARATOR;
                     $fieldSql = "SUBSTRING_INDEX(SUBSTRING_INDEX(`{$col}`, '{$sep}', {$idx}), '{$sep}', -1)";
                     break;
                 case 'direct':
@@ -117,10 +118,10 @@ class BaseEntity
             return null;
         }
         $definition = static::getDefinition();
-        $storage_mode = $definition['storage_mode'] ?? 'grouped_string';
+        $storage_mode = isset($definition['storage_mode']) ? $definition['storage_mode'] : 'grouped_string';
         $entity = [];
 
-        if (isset($data['id'])) $entity['id'] = (int)$data['id'];
+        if (isset($data['ID'])) $entity['id'] = (int)$data['ID'];
         if (isset($data['SEQUENCE'])) $entity['createdAt'] = $data['SEQUENCE'];
 
         if ($storage_mode === 'json') {
@@ -135,9 +136,9 @@ class BaseEntity
                 if (!isset($data[$dbColumn])) continue;
 
                 if (is_array($prop)) {
-                    $values = explode(self::GROUP_SEPARATOR, $data[$dbColumn]);
+                    $values = explode(self::$GROUP_SEPARATOR, $data[$dbColumn]);
                     foreach ($prop as $index => $propName) {
-                        $entity[$propName] = $values[$index] ?? null;
+                        $entity[$propName] = isset($values[$index]) ? $values[$index] : null;
                     }
                 } else {
                     $entity[$prop] = $data[$dbColumn];
@@ -148,7 +149,8 @@ class BaseEntity
         $entityObject = (object)$entity;
         foreach ($definition['computed'] as $propName => $closure) {
             if ($closure instanceof Closure) {
-                $entity[$propName] = $closure->bindTo($entityObject)();
+                $temp = $closure->bindTo($entityObject);
+                $entity[$propName] = $temp();
             }
         }
 
@@ -158,12 +160,12 @@ class BaseEntity
     protected static function dehydrate($data)
     {
         $definition = static::getDefinition();
-        $storage_mode = $definition['storage_mode'] ?? 'grouped_string';
+        $storage_mode = isset($definition['storage_mode']) ? $definition['storage_mode'] : 'grouped_string';
         $dbData = [];
 
         if ($storage_mode === 'json') {
             $jsonData = [];
-            $field_list = $definition['fields']['VALUE'] ?? [];
+            $field_list = isset($definition['fields']['VALUE']) ? $definition['fields']['VALUE'] : [];
             foreach ($field_list as $field) {
                 if (isset($data[$field])) {
                     $jsonData[$field] = $data[$field];
@@ -175,9 +177,9 @@ class BaseEntity
                 if (is_array($prop)) {
                     $values = [];
                     foreach ($prop as $p) {
-                        $values[] = $data[$p] ?? '';
+                        $values[] = isset($data[$p]) ? $data[$p] : '';
                     }
-                    $dbData[$dbColumn] = implode(self::GROUP_SEPARATOR, $values);
+                    $dbData[$dbColumn] = implode(self::$GROUP_SEPARATOR, $values);
                 } else {
                     if (isset($data[$prop])) {
                         $dbData[$dbColumn] = $data[$prop];
@@ -229,7 +231,7 @@ class BaseEntity
         $userWhere = '1';
 
         if (is_numeric($conditions)) {
-            $userWhere = '`id` = :id';
+            $userWhere = '`ID` = :id';
             $params['id'] = $conditions;
         } else {
             list($userWhere, $userParams) = static::buildWhereClause($conditions);
@@ -264,18 +266,27 @@ class BaseEntity
         }
 
         $rows = Db::all("SELECT * FROM `{$table}` WHERE {$finalWhere}", $params);
+
         
         return array_map([static::class, 'hydrate'], $rows);
     }
 
-    public static function update($id, $data)
+    public static function update($conditions, $data)
     {
+        $item = static::getOne($conditions);
+
+        if (!$item) {
+            return 0;
+        }
+
+        $id = $item['id'];
+        
         $definition = static::getDefinition();
         $table = $definition['table'];
-        $storage_mode = $definition['storage_mode'] ?? 'grouped_string';
+        $storage_mode = isset($definition['storage_mode']) ? $definition['storage_mode'] : 'grouped_string';
         $dehydratedData = [];
 
-        $where = "`id` = :id AND `TYPE` = :_entity_type";
+        $where = "`ID` = :id AND `TYPE` = :_entity_type";
         $params = ['id' => $id, '_entity_type' => static::$entityName];
 
         if ($storage_mode === 'json') {
@@ -309,11 +320,11 @@ class BaseEntity
                 $existing = Db::one("SELECT " . implode(',', $groupedDbColumns) . " FROM `{$table}` WHERE {$where}", $params);
                 if ($existing) {
                     foreach($groupedDbColumns as $col) {
-                        $old_values = explode(self::GROUP_SEPARATOR, $existing[$col] ?? '');
+                        $old_values = explode(self::$GROUP_SEPARATOR, isset($existing[$col]) ? $existing[$col] : '');
                         $merged_data_for_group = [];
                         
                         foreach($definition['fields'][$col] as $index => $propName) {
-                            $merged_data_for_group[$propName] = $old_values[$index] ?? null;
+                            $merged_data_for_group[$propName] = isset($old_values[$index]) ? $old_values[$index] : null;
                         }
                         foreach($definition['fields'][$col] as $propName) {
                             if (isset($data[$propName])) {
@@ -323,9 +334,9 @@ class BaseEntity
 
                         $final_values = [];
                         foreach($definition['fields'][$col] as $propName) {
-                            $final_values[] = $merged_data_for_group[$propName] ?? '';
+                            $final_values[] = isset($merged_data_for_group[$propName]) ? $merged_data_for_group[$propName] : '';
                         }
-                        $dehydratedData[$col] = implode(self::GROUP_SEPARATOR, $final_values);
+                        $dehydratedData[$col] = implode(self::$GROUP_SEPARATOR, $final_values);
                     }
                 }
             }
@@ -353,11 +364,13 @@ class BaseEntity
                 $itemObject = (object)$item;
                 foreach ($data as $key => $value) {
                     if ($value instanceof Closure) {
-                        $updateData[$key] = $value->bindTo($itemObject)();
+                        $temp = $value->bindTo($itemObject);
+                        $updateData[$key] = $temp();
                     } else {
                         $updateData[$key] = $value;
                     }
                 }
+
                 if (static::update($item['id'], $updateData)) {
                     $updatedCount++;
                 }
@@ -368,6 +381,8 @@ class BaseEntity
             throw $e;
         }
 
+        
+
         return $updatedCount;
     }
 
@@ -375,7 +390,7 @@ class BaseEntity
     {
         $definition = static::getDefinition();
         $table = $definition['table'];
-        $where = "`id` = :id AND `TYPE` = :_entity_type";
+        $where = "`ID` = :id AND `TYPE` = :_entity_type";
         $params = [
             'id' => $id,
             '_entity_type' => static::$entityName
@@ -403,7 +418,7 @@ class Entity
         $is_simple_array = empty(array_filter(array_keys($definition), 'is_string'));
 
         if ($is_simple_array) {
-            $table = $options['table'] ?? PREFIX . 'BLOCKS';
+            $table = isset($options['table']) ? $options['table'] : PREFIX . 'BLOCKS';
             if ($table !== PREFIX . 'BLOCKS') {
                 throw new InvalidArgumentException("Simple array definition is only allowed for the 'BLOCKS' table.");
             }
@@ -425,19 +440,30 @@ class Entity
             $fields = [];
             $computed = [];
             
-            $unnamed_definitions = array_filter($definition, 'is_int', ARRAY_FILTER_USE_KEY);
+            $unnamed_definitions = [];
+            foreach ($definition as $key => $value) {
+                if (is_int($key)) {
+                    $unnamed_definitions[$key] = $value;
+                }
+            }
+
             if (!empty($unnamed_definitions)) {
                 $computed = array_pop($unnamed_definitions);
             }
 
             $named_definitions = array_filter($definition, 'is_string', ARRAY_FILTER_USE_KEY);
+            foreach ($definition as $key => $value) {
+                if (is_string($key)) {
+                    $named_definitions[$key] = $value;
+                }
+            }
             $fields = $named_definitions;
 
             self::$entities[$entityName] = [
                 'name' => $entityName,
                 'fields' => $fields,
                 'computed' => $computed,
-                'table' => $options['table'] ?? PREFIX . 'BLOCKS',
+                'table' => isset($options['table']) ? $options['table'] : PREFIX . 'BLOCKS',
                 'storage_mode' => 'grouped_string'
             ];
         }
@@ -448,6 +474,6 @@ class Entity
 
     public static function getDefinition($entityName)
     {
-        return self::$entities[$entityName] ?? null;
+        return isset(self::$entities[$entityName]) ? self::$entities[$entityName] : null;
     }
 }

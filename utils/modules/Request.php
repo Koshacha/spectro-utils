@@ -12,13 +12,23 @@ class Request {
         self::$post = $_POST;
         self::$files = self::normalizeFiles($_FILES);
 
-        $postPhpInput = file_get_contents('php://input');
-        self::$request = array_merge(self::$get, self::$post, json_decode($postPhpInput, true));
+        $json = file_get_contents('php://input');
+        $json = json_decode($json, true);
+
+        self::$request = array_merge(self::$get, self::$post);
+
+        if ($json) {
+            self::$request = array_merge(self::$request, $json);
+        }
     }
 
-    public static function get($key, $fallback = null) {
+    public static function get($key = null, $fallback = null) {
         if (!self::$fetched) {
             self::fetch();
+        }
+
+        if (!$key) {
+            return self::$request;
         }
 
         return isset(self::$request[$key]) ? self::$request[$key] : $fallback;
