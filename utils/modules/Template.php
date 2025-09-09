@@ -1,8 +1,15 @@
 <?php
 
+require_once KYUTILS_PATH . '/libs/smarty-3/libs/bootstrap.php';
+
 class Template {
     private static $templates = [];
     private static $template = "";
+    public static $s;
+
+    public static function autorun() {
+        self::$s = new Smarty();
+    }
 
     public static function useTemplates($filename) {
         $templates = [];
@@ -26,6 +33,12 @@ class Template {
     }
 
     public static function assert($fields, $template = null) {
+        if (empty(self::$s)) {
+            self::autorun();
+        } else {
+            self::$s->clearAllAssign();
+        }
+
         if ($template === null && !array_key_exists('$template', $fields)) {
             $html = self::$template;
         } else {
@@ -46,11 +59,13 @@ class Template {
             $html = self::$templates[$template];
         }
 
-        foreach ($fields as $k => $v) {
+        $smarty_context = [];
+        foreach($fields as $k => $v) {
+            if ($k === '$template') continue;
+
             if (is_array($v)) {
                 if (isset($v['$items'])) {
                     $items_html = '';
-
                     if(isset($v['$items'])){
                         foreach ($v['$items'] as $item) {
                              if (is_array($item) && isset($item['$template'])) {
@@ -63,27 +78,19 @@ class Template {
                              }
                         }
                     }
-                    else {
-                         if (is_array($v) && isset($v['$template'])) {
-                                 $items_html .= self::assert($v, $v['$template']);
-                             }
-                    }
-
-                    $html = str_replace("<!--{" . $k . "}-->", $items_html, $html);
-                    $html = str_replace("{" . $k . "}", $items_html, $html);
-
-                } elseif ($k === '$template') {
-                    continue;
+                    $smarty_context[$k] = $items_html;
                 } elseif (isset($v['$template'])) {
-                    $html = str_replace("<!--{" . $k . "}-->", self::assert($v, $v['$template']), $html);
-                    $html = str_replace("{" . $k . "}", self::assert($v, $v['$template']), $html);
+                    $smarty_context[$k] = self::assert($v, $v['$template']);
+                } else {
+                    $smarty_context[$k] = $v;
                 }
             } else {
-                $html = str_replace("<!--{" . $k . "}-->", $v, $html);
-                $html = str_replace("{" . $k . "}", $v, $html);
+                $smarty_context[$k] = $v;
             }
         }
 
-        return $html;
+        self::$s->assign($smarty_context);
+        return self::$s->fetch('string:' . $html);
     }
 }
+
