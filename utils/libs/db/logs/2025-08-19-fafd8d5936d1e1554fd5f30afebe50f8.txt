@@ -1,0 +1,27 @@
+Time : 15:29:27
+SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+Raw SQL : SELECT * FROM `TSAGARE12_BLOCKS` WHERE `TYPE` = :_entity_type AND (`NAME` = :param_0)
+
+Time : 15:28:17
+SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+Raw SQL : SELECT * FROM `TSAGARE12_BLOCKS` WHERE `TYPE` = :_entity_type AND (`NAME` = :param_0)
+
+Time : 15:28:15
+SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+Raw SQL : SELECT * FROM `TSAGARE12_BLOCKS` WHERE `TYPE` = :_entity_type AND (`NAME` = :param_0)
+
+Time : 15:28:09
+SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+Raw SQL : SELECT * FROM `TSAGARE12_BLOCKS` WHERE `TYPE` = :_entity_type AND (`NAME` = :param_0)
+
+Time : 15:27:19
+SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+Raw SQL : SELECT * FROM `TSAGARE12_BLOCKS` WHERE `TYPE` = :_entity_type AND (`NAME` = :param_0)
+
+Time : 15:27:15
+SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+Raw SQL : SELECT * FROM `TSAGARE12_BLOCKS` WHERE `TYPE` = :_entity_type AND (`NAME` = :param_0)
+
+Time : 15:26:17
+SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+Raw SQL : SELECT * FROM `TSAGARE12_BLOCKS` WHERE `TYPE` = :_entity_type AND (`NAME` = :param_0)

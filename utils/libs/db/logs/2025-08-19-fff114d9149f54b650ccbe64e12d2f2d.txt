@@ -1,0 +1,35 @@
+Time : 21:36:12
+SQLSTATE[42S22]: Column not found: 1054 Unknown column 'token' in 'where clause'
+Raw SQL : SELECT * FROM `TSAGARE12_BLOCKS` WHERE `TYPE` = :_entity_type AND (`token` = :param_0) LIMIT 1
+
+Time : 21:35:55
+SQLSTATE[42S22]: Column not found: 1054 Unknown column 'token' in 'where clause'
+Raw SQL : SELECT * FROM `TSAGARE12_BLOCKS` WHERE `TYPE` = :_entity_type AND (`token` = :param_0) LIMIT 1
+
+Time : 21:34:58
+SQLSTATE[42S22]: Column not found: 1054 Unknown column 'token' in 'where clause'
+Raw SQL : SELECT * FROM `TSAGARE12_BLOCKS` WHERE `TYPE` = :_entity_type AND (`token` = :param_0) LIMIT 1
+
+Time : 21:32:50
+SQLSTATE[42S22]: Column not found: 1054 Unknown column 'token' in 'where clause'
+Raw SQL : SELECT * FROM `TSAGARE12_BLOCKS` WHERE `TYPE` = :_entity_type AND (`token` = :param_0) LIMIT 1
+
+Time : 21:31:48
+SQLSTATE[42S22]: Column not found: 1054 Unknown column 'token' in 'where clause'
+Raw SQL : SELECT * FROM `TSAGARE12_BLOCKS` WHERE `TYPE` = :_entity_type AND (`token` = :param_0) LIMIT 1
+
+Time : 21:31:12
+SQLSTATE[42S22]: Column not found: 1054 Unknown column 'token' in 'where clause'
+Raw SQL : SELECT * FROM `TSAGARE12_BLOCKS` WHERE `TYPE` = :_entity_type AND (`token` = :param_0) LIMIT 1
+
+Time : 21:29:50
+SQLSTATE[42S22]: Column not found: 1054 Unknown column 'token' in 'where clause'
+Raw SQL : SELECT * FROM `TSAGARE12_BLOCKS` WHERE `TYPE` = :_entity_type AND (`token` = :param_0)
+
+Time : 21:25:49
+SQLSTATE[42S22]: Column not found: 1054 Unknown column 'token' in 'where clause'
+Raw SQL : SELECT * FROM `TSAGARE12_BLOCKS` WHERE `TYPE` = :_entity_type AND (`token` = :param_0) LIMIT 1
+
+Time : 21:25:08
+SQLSTATE[42S22]: Column not found: 1054 Unknown column 'token' in 'where clause'
+Raw SQL : SELECT * FROM `TSAGARE12_BLOCKS` WHERE `TYPE` = :_entity_type AND (`token` = :param_0) LIMIT 1

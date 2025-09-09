@@ -306,39 +306,41 @@ class PDO_DB
     /**
      * update
      *
-     * @param string $tableName
+     * @param string $table
+     * @param array $dehydratedData
+     * @param string $where
      * @param array $params
-     * @param array $where
      * @return int affect rows
      */
-    public function update($tableName, $params = array(), $where = array())
+    public function update($table, $dehydratedData, $where, $params)
     {
-        $rowCount = 0;
-        if (!empty($params)) {
-            $updColStr = '';
-            $whereStr = '';
-            $updatePara = array();
-            // Build update statement
-            foreach ($params as $key => $value) {
-                $updColStr .= "{$key}=?,";
-            }
-            $updColStr = substr($updColStr, 0, -1);
-            $dbQuery = "UPDATE {$tableName}
-                        SET {$updColStr}";
-            // where condition
-            if (is_array($where)) {
-                foreach ($where as $key => $value) {
-                    // Is there need to add "OR" condition?
-                    $whereStr .= "AND {$key}=?";
-                }
-                $dbQuery .= " WHERE 1=1 {$whereStr}";
-                $updatePara = array_merge(array_values($params), array_values($where));
-            } else {
-                $updatePara = array_values($params);
-            }
-            $rowCount = $this->query($dbQuery, $updatePara);
+        if (empty($dehydratedData)) {
+            return 0;
         }
-        return $rowCount;
+
+        $setParts = [];
+        $updateParams = [];
+
+        // Build SET clause
+        foreach ($dehydratedData as $key => $value) {
+            // Use a prefix for SET placeholders to avoid collision with WHERE placeholders
+            $placeholder = 'set_' . $key;
+            $setParts[] = "`{$key}` = :{$placeholder}";
+            $updateParams[$placeholder] = $value;
+        }
+        $setClause = implode(', ', $setParts);
+
+        $dbQuery = "UPDATE `{$table}` SET {$setClause}";
+
+        // Add WHERE clause
+        if (!empty($where)) {
+            $dbQuery .= " WHERE " . $where;
+        }
+
+        // Merge SET parameters with WHERE parameters
+        $allParams = array_merge($updateParams, $params);
+
+        return $this->query($dbQuery, $allParams);
     }
 
     /**
