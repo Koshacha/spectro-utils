@@ -26,6 +26,15 @@ class BaseEntity
         return Entity::getDefinition(static::$entityName);
     }
 
+    private static function getSeparator($dbColumn)
+    {
+        $definition = static::getDefinition();
+        if (isset($definition['separators'][$dbColumn])) {
+            return $definition['separators'][$dbColumn];
+        }
+        return self::$GROUP_SEPARATOR;
+    }
+
     private static function findFieldMapping($fieldName) {
         $definition = static::getDefinition();
         $storage_mode = isset($definition['storage_mode']) ? $definition['storage_mode'] : 'grouped_string';
@@ -91,7 +100,7 @@ class BaseEntity
                 case 'grouped':
                     $col = $mapping['column'];
                     $idx = $mapping['index'] + 1;
-                    $sep = self::$GROUP_SEPARATOR;
+                    $sep = static::getSeparator($col);
                     $fieldSql = "SUBSTRING_INDEX(SUBSTRING_INDEX(`{$col}`, '{$sep}', {$idx}), '{$sep}', -1)";
                     break;
                 case 'direct':
@@ -136,7 +145,8 @@ class BaseEntity
                 if (!isset($data[$dbColumn])) continue;
 
                 if (is_array($prop)) {
-                    $values = explode(self::$GROUP_SEPARATOR, $data[$dbColumn]);
+                    $separator = static::getSeparator($dbColumn);
+                    $values = explode($separator, $data[$dbColumn]);
                     foreach ($prop as $index => $propName) {
                         $entity[$propName] = isset($values[$index]) ? $values[$index] : null;
                     }
@@ -179,7 +189,8 @@ class BaseEntity
                     foreach ($prop as $p) {
                         $values[] = isset($data[$p]) ? $data[$p] : '';
                     }
-                    $dbData[$dbColumn] = implode(self::$GROUP_SEPARATOR, $values);
+                    $separator = static::getSeparator($dbColumn);
+                    $dbData[$dbColumn] = implode($separator, $values);
                 } else {
                     if (isset($data[$prop])) {
                         $dbData[$dbColumn] = $data[$prop];
@@ -271,6 +282,10 @@ class BaseEntity
         return array_map([static::class, 'hydrate'], $rows);
     }
 
+    public static function all() {
+        return static::get();
+    }
+
     public static function update($conditions, $data)
     {
         $item = static::getOne($conditions);
@@ -320,7 +335,8 @@ class BaseEntity
                 $existing = Db::one("SELECT " . implode(',', $groupedDbColumns) . " FROM `{$table}` WHERE {$where}", $params);
                 if ($existing) {
                     foreach($groupedDbColumns as $col) {
-                        $old_values = explode(self::$GROUP_SEPARATOR, isset($existing[$col]) ? $existing[$col] : '');
+                        $separator = static::getSeparator($col);
+                        $old_values = explode($separator, isset($existing[$col]) ? $existing[$col] : '');
                         $merged_data_for_group = [];
                         
                         foreach($definition['fields'][$col] as $index => $propName) {
@@ -336,7 +352,7 @@ class BaseEntity
                         foreach($definition['fields'][$col] as $propName) {
                             $final_values[] = isset($merged_data_for_group[$propName]) ? $merged_data_for_group[$propName] : '';
                         }
-                        $dehydratedData[$col] = implode(self::$GROUP_SEPARATOR, $final_values);
+                        $dehydratedData[$col] = implode($separator, $final_values);
                     }
                 }
             }
@@ -458,13 +474,25 @@ class Entity
                 }
             }
             $fields = $named_definitions;
+            $separators = [];
+
+            foreach ($fields as $dbColumn => &$prop) {
+                if (is_array($prop) && !empty($prop)) {
+                    $first = reset($prop);
+                    if (is_string($first) && !preg_match('/[a-zA-Z]/', $first)) {
+                        $separators[$dbColumn] = array_shift($prop);
+                    }
+                }
+            }
+            unset($prop);
 
             self::$entities[$entityName] = [
                 'name' => $entityName,
                 'fields' => $fields,
                 'computed' => $computed,
                 'table' => isset($options['table']) ? $options['table'] : PREFIX . 'BLOCKS',
-                'storage_mode' => 'grouped_string'
+                'storage_mode' => 'grouped_string',
+                'separators' => $separators
             ];
         }
 
