@@ -20,7 +20,18 @@ includeUtilities();
 
 Modules::enable();
 
-function runProgram() {
+function __runShared() {
+    if (file_exists(IMGPATH . 'shared.php')) {
+        require_once IMGPATH . 'shared.php';
+    }
+    foreach (glob(IMGPATH . 'shared.*.php') as $filename) {
+        require_once $filename;
+    }
+
+    Route::exec();
+}
+
+function __runProgram() {
     if (file_exists(IMGPATH . 'app.php')) {
         require_once IMGPATH . 'app.php';
     }
@@ -31,11 +42,11 @@ function runProgram() {
     Route::exec();
 }
 
-function runActions() {
-    if (file_exists(IMGPATH . 'functions.php')) {
-        require_once IMGPATH . 'functions.php';
+function __runActions() {
+    if (file_exists(IMGPATH . 'handlers.php')) {
+        require_once IMGPATH . 'handlers.php';
     }
-    foreach (glob(IMGPATH . 'functions.*.php') as $filename) {
+    foreach (glob(IMGPATH . 'handlers.*.php') as $filename) {
         require_once $filename;
     }
 
