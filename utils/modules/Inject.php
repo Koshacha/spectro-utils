@@ -63,6 +63,8 @@ class Inject {
                     $value = $req[$name];
                 } elseif (array_key_exists($name, $GLOBALS)) {
                   $value = $GLOBALS[$name];
+                } elseif (array_key_exists($name, $GLOBALS[KYUTILS_PROVIDE_KEY])) {
+                    $value = $GLOBALS[KYUTILS_PROVIDE_KEY][$name];
                 }
             }
 

@@ -5,6 +5,11 @@ class Modules {
 
     public static function enable($modules = []) {
         $autorun_classes = [];
+        $provide_classes = [];
+
+        if (!isset($GLOBALS[KYUTILS_PROVIDE_KEY]) || !is_array($GLOBALS[KYUTILS_PROVIDE_KEY])) {
+            $GLOBALS[KYUTILS_PROVIDE_KEY] = [];
+        }
 
         $cacheDir = KYUTILS_PATH . '/cache';
         $cacheFile = $cacheDir . '/scripts.json';
@@ -55,10 +60,15 @@ class Modules {
 
                 try {
                     require_once $file;
-                    if (class_exists($moduleName) && method_exists($moduleName, 'autorun')) {
-                        $autorun_classes[] = $moduleName;
+                    if (class_exists($moduleName)) {
+                        if (method_exists($moduleName, 'autorun')) {
+                            $autorun_classes[] = $moduleName;
+                        }
+                        if (method_exists($moduleName, 'provide')) {
+                            $provide_classes[] = $moduleName;
+                        }
+                        self::$loaded_classes[] = $moduleName;
                     }
-                    self::$loaded_classes[] = $moduleName;
                 } catch (Exception $e) {
                     error_log("Spectro-utils: Runtime error skipped in module {$moduleName}: " . $e->getMessage());
                     if (isset($cacheData[$file])) {
@@ -76,6 +86,15 @@ class Modules {
                 mkdir($cacheDir, 0777, true);
             }
             file_put_contents($cacheFile, json_encode($cacheData, JSON_PRETTY_PRINT));
+        }
+
+        foreach ($provide_classes as $class) {
+            $provided_data = $class::provide();
+            if (is_array($provided_data)) {
+                foreach ($provided_data as $key => $value) {
+                    $GLOBALS[KYUTILS_PROVIDE_KEY][$key] = $value;
+                }
+            }
         }
 
         foreach ($autorun_classes as $class) {
