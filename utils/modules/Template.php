@@ -8,7 +8,13 @@ class Template {
     public static $s;
 
     public static function autorun() {
-        self::$s = new Smarty();
+        $s = new Smarty();
+
+        $s->setTemplateDir(KYUTILS_PATH . '/html');
+        $s->setCacheDir(KYUTILS_PATH . '/cache/smarty/cache');
+        $s->setCompileDir(KYUTILS_PATH . '/cache/smarty/templates_c');
+
+        self::$s = $s;
     }
 
     public static function provide() {
@@ -100,6 +106,28 @@ class Template {
 
         self::$s->assign($smarty_context);
         return self::$s->fetch('string:' . $html);
+    }
+}
+
+if (!function_exists('template')) {
+    function template($name) {
+        $filename = str_replace('.html', '', $name) . '.html';
+
+        if (!file_exists(KYUTILS_TEMPLATES_DIR . '/' . $filename)) return null;
+
+        return Template::useTemplates(KYUTILS_TEMPLATES_DIR . '/' . $filename);
+    }
+}
+
+if (!function_exists('view')) {
+    function view($html, $data = []) {
+        $context = Template::provide();
+        $s = $context['s'];
+
+        $s->clearAllAssign();
+        $s->assign($data);
+
+        return $s->fetch('string:' . $html);
     }
 }
 
