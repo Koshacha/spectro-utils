@@ -11,6 +11,15 @@ class Template {
         self::$s = new Smarty();
     }
 
+    public static function provide() {
+        if (empty(self::$s)) {
+            self::autorun();
+        }
+        return [
+            's' => self::$s
+        ];
+    }
+
     public static function useTemplates($filename) {
         $templates = [];
         $fileContent = file_get_contents($filename);
