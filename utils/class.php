@@ -6,6 +6,17 @@ class Modules {
     public static function enable($modules = []) {
         $autorun_classes = [];
 
+        $cacheDir = KYUTILS_PATH . '/cache';
+        $cacheFile = $cacheDir . '/scripts.json';
+        $cacheData = [];
+
+        if (file_exists($cacheFile)) {
+            $cacheData = json_decode(file_get_contents($cacheFile), true);
+            if (!is_array($cacheData)) {
+                $cacheData = [];
+            }
+        }
+
         if (empty($modules)) {
             $modules = self::discoverModules();
         }
@@ -13,6 +24,8 @@ class Modules {
         if (is_string($modules)) {
             $modules = [$modules];
         }
+
+        $cacheUpdated = false;
 
         foreach ($modules as $module) {
             $moduleName = ucfirst(strtolower($module));
@@ -23,14 +36,46 @@ class Modules {
             }
 
             if (file_exists($file)) {
-                require_once $file;
-                if (class_exists($moduleName) && method_exists($moduleName, 'autorun')) {
-                    $autorun_classes[] = $moduleName;
+                $mtime = filemtime($file);
+                $is_checked = isset($cacheData[$file]) && $cacheData[$file] === $mtime;
+
+                if (!$is_checked) {
+                    $syntax_check_output = shell_exec("php -l " . escapeshellarg($file));
+                    if (strpos($syntax_check_output, 'No syntax errors detected') === false) {
+                        error_log("Spectro-utils: Syntax error skipped in module {$moduleName}: " . trim($syntax_check_output));
+                        if (isset($cacheData[$file])) {
+                            unset($cacheData[$file]);
+                            $cacheUpdated = true;
+                        }
+                        continue;
+                    }
+                    $cacheData[$file] = $mtime;
+                    $cacheUpdated = true;
                 }
-                self::$loaded_classes[] = $moduleName;
+
+                try {
+                    require_once $file;
+                    if (class_exists($moduleName) && method_exists($moduleName, 'autorun')) {
+                        $autorun_classes[] = $moduleName;
+                    }
+                    self::$loaded_classes[] = $moduleName;
+                } catch (Exception $e) {
+                    error_log("Spectro-utils: Runtime error skipped in module {$moduleName}: " . $e->getMessage());
+                    if (isset($cacheData[$file])) {
+                        unset($cacheData[$file]);
+                        $cacheUpdated = true;
+                    }
+                }
             } else {
-                throw new \Exception("Module {$moduleName} not found");
+                throw new Exception("Module {$moduleName} not found");
             }
+        }
+
+        if ($cacheUpdated) {
+            if (!is_dir($cacheDir)) {
+                mkdir($cacheDir, 0777, true);
+            }
+            file_put_contents($cacheFile, json_encode($cacheData, JSON_PRETTY_PRINT));
         }
 
         foreach ($autorun_classes as $class) {
